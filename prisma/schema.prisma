@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ItemCategory {
+  CONSUMABLE
+  MATERIAL
+  RECIPE
+  EQUIPMENT
+  SEED
+  QUEST
+}
+
+enum EquipmentSlot {
+  WEAPON
+  HELMET
+  ARMOR
+  RING
+  BOOTS
+  ACCESSORY
+}
+
+enum BatchStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum QuestStatus {
+  LOCKED
+  ACTIVE
+  COMPLETED
+  CLAIMED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  characters   Character[]
+}
+
+model RealmLevel {
+  id             String      @id @default(cuid())
+  name           String      @unique
+  order          Int         @unique
+  requiredExp    Int
+  breakthroughHp Int
+  breakthroughQi Int
+  createdAt      DateTime    @default(now())
+  characters     Character[]
+}
+
+model Character {
+  id                    String                 @id @default(cuid())
+  userId                String
+  name                  String                 @unique
+  realmLevelId          String
+  level                 Int                    @default(1)
+  experience            Int                    @default(0)
+  spiritStone           Int                    @default(0)
+  hp                    Int                    @default(100)
+  maxHp                 Int                    @default(100)
+  qi                    Int                    @default(60)
+  maxQi                 Int                    @default(60)
+  attack                Int                    @default(10)
+  defense               Int                    @default(8)
+  agility               Int                    @default(8)
+  comprehension         Int                    @default(10)
+  rootBone              Int                    @default(10)
+  currentDungeonRunId   String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  user                  User                   @relation(fields: [userId], references: [id])
+  realmLevel            RealmLevel             @relation(fields: [realmLevelId], references: [id])
+  inventorySlots        InventorySlot[]
+  equipmentInstances    EquipmentInstance[]
+  dungeonRuns           DungeonRun[]
+  battleLogs            BattleLog[]
+  lootRecords           LootRecord[]
+  purchaseRecords       PurchaseRecord[]
+  herbPlots             HerbPlot[]
+  cropCycles            CropCycle[]
+  alchemyBatches        AlchemyBatch[]
+  forgeBatches          ForgeBatch[]
+  characterQuests       CharacterQuest[]
+  characterAchievements CharacterAchievement[]
+}
+
+model ItemDef {
+  id                 String                     @id @default(cuid())
+  code               String                     @unique
+  name               String
+  category           ItemCategory
+  rarity             Int                        @default(1)
+  stackable          Boolean                    @default(true)
+  baseValue          Int                        @default(0)
+  description        String
+  createdAt          DateTime                   @default(now())
+  inventorySlots     InventorySlot[]
+  lootRecords        LootRecord[]
+  shopItems          ShopItem[]
+  alchemyIngredients AlchemyRecipeIngredient[]
+  forgeMaterials     ForgeRecipeMaterial[]
+}
+
+model InventorySlot {
+  id          String    @id @default(cuid())
+  characterId String
+  itemDefId   String
+  quantity    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  character   Character @relation(fields: [characterId], references: [id])
+  itemDef     ItemDef   @relation(fields: [itemDefId], references: [id])
+
+  @@unique([characterId, itemDefId])
+}
+
+model EquipmentInstance {
+  id           String        @id @default(cuid())
+  characterId  String
+  itemDefId    String
+  slot         EquipmentSlot
+  name         String
+  quality      Int           @default(1)
+  attackBonus  Int           @default(0)
+  defenseBonus Int           @default(0)
+  agilityBonus Int           @default(0)
+  durability   Int           @default(100)
+  isEquipped   Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  character    Character     @relation(fields: [characterId], references: [id])
+  itemDef      ItemDef       @relation(fields: [itemDefId], references: [id])
+}
+
+model MonsterDef {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  level       Int
+  hp          Int
+  attack      Int
+  defense     Int
+  speed       Int
+  rewardExp   Int
+  rewardStone Int
+  createdAt   DateTime     @default(now())
+  dungeonDefs DungeonDef[]
+  battleLogs  BattleLog[]
+}
+
+model DungeonDef {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  name          String
+  description   String
+  staminaCost   Int          @default(5)
+  minRealmOrder Int          @default(1)
+  monsterId     String
+  rewardStone   Int          @default(0)
+  createdAt     DateTime     @default(now())
+  monster       MonsterDef   @relation(fields: [monsterId], references: [id])
+  dungeonRuns   DungeonRun[]
+}
+
+model DungeonRun {
+  id           String     @id @default(cuid())
+  characterId  String
+  dungeonDefId String
+  startedAt    DateTime   @default(now())
+  endedAt      DateTime?
+  success      Boolean?
+  turns        Int        @default(0)
+  rewardExp    Int        @default(0)
+  rewardStone  Int        @default(0)
+  character    Character  @relation(fields: [characterId], references: [id])
+  dungeonDef   DungeonDef @relation(fields: [dungeonDefId], references: [id])
+  battleLogs   BattleLog[]
+  lootRecords  LootRecord[]
+}
+
+model BattleLog {
+  id           String      @id @default(cuid())
+  characterId  String
+  dungeonRunId String
+  monsterId    String
+  turn         Int
+  actor        String
+  action       String
+  value        Int
+  createdAt    DateTime    @default(now())
+  character    Character   @relation(fields: [characterId], references: [id])
+  dungeonRun   DungeonRun  @relation(fields: [dungeonRunId], references: [id])
+  monster      MonsterDef  @relation(fields: [monsterId], references: [id])
+}
+
+model LootRecord {
+  id           String      @id @default(cuid())
+  characterId  String
+  dungeonRunId String
+  itemDefId    String?
+  quantity     Int         @default(1)
+  spiritStone  Int         @default(0)
+  createdAt    DateTime    @default(now())
+  character    Character   @relation(fields: [characterId], references: [id])
+  dungeonRun   DungeonRun  @relation(fields: [dungeonRunId], references: [id])
+  itemDef      ItemDef?    @relation(fields: [itemDefId], references: [id])
+}
+
+model ShopItem {
+  id          String     @id @default(cuid())
+  itemDefId   String
+  price       Int
+  stock       Int?
+  refreshHour Int?
+  createdAt   DateTime   @default(now())
+  itemDef     ItemDef    @relation(fields: [itemDefId], references: [id])
+  purchases   PurchaseRecord[]
+}
+
+model PurchaseRecord {
+  id          String    @id @default(cuid())
+  characterId String
+  shopItemId  String
+  quantity    Int       @default(1)
+  totalPrice  Int
+  createdAt   DateTime  @default(now())
+  character   Character @relation(fields: [characterId], references: [id])
+  shopItem    ShopItem  @relation(fields: [shopItemId], references: [id])
+}
+
+model AlchemyRecipe {
+  id          String                     @id @default(cuid())
+  code        String                     @unique
+  name        String
+  resultName  String
+  resultQty   Int                        @default(1)
+  qiCost      Int
+  successRate Int
+  createdAt   DateTime                   @default(now())
+  ingredients AlchemyRecipeIngredient[]
+  batches     AlchemyBatch[]
+}
+
+model AlchemyRecipeIngredient {
+  id        String        @id @default(cuid())
+  recipeId  String
+  itemDefId String
+  quantity  Int
+  recipe    AlchemyRecipe @relation(fields: [recipeId], references: [id])
+  itemDef   ItemDef       @relation(fields: [itemDefId], references: [id])
+
+  @@unique([recipeId, itemDefId])
+}
+
+model AlchemyBatch {
+  id          String        @id @default(cuid())
+  characterId String
+  recipeId    String
+  status      BatchStatus   @default(PENDING)
+  quality     Int           @default(1)
+  createdAt   DateTime      @default(now())
+  finishedAt  DateTime?
+  character   Character     @relation(fields: [characterId], references: [id])
+  recipe      AlchemyRecipe @relation(fields: [recipeId], references: [id])
+}
+
+model CropDef {
+  id              String      @id @default(cuid())
+  code            String      @unique
+  name            String
+  growthMinutes   Int
+  yieldMin        Int
+  yieldMax        Int
+  requiredRealm   Int         @default(1)
+  createdAt       DateTime    @default(now())
+  herbPlots       HerbPlot[]
+  cropCycles      CropCycle[]
+}
+
+model HerbPlot {
+  id             String      @id @default(cuid())
+  characterId    String
+  slotIndex      Int
+  cropDefId      String?
+  plantedAt      DateTime?
+  matureAt       DateTime?
+  isUnlocked     Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  character      Character   @relation(fields: [characterId], references: [id])
+  cropDef        CropDef?    @relation(fields: [cropDefId], references: [id])
+
+  @@unique([characterId, slotIndex])
+}
+
+model CropCycle {
+  id          String      @id @default(cuid())
+  characterId String
+  cropDefId   String
+  plantedAt   DateTime
+  harvestedAt DateTime?
+  yield       Int?
+  createdAt   DateTime    @default(now())
+  character   Character   @relation(fields: [characterId], references: [id])
+  cropDef     CropDef     @relation(fields: [cropDefId], references: [id])
+}
+
+model ForgeRecipe {
+  id          String                @id @default(cuid())
+  code        String                @unique
+  name        String
+  resultName  String
+  slot        EquipmentSlot
+  qiCost      Int
+  successRate Int
+  createdAt   DateTime              @default(now())
+  materials   ForgeRecipeMaterial[]
+  batches     ForgeBatch[]
+}
+
+model ForgeRecipeMaterial {
+  id        String      @id @default(cuid())
+  recipeId  String
+  itemDefId String
+  quantity  Int
+  recipe    ForgeRecipe @relation(fields: [recipeId], references: [id])
+  itemDef   ItemDef     @relation(fields: [itemDefId], references: [id])
+
+  @@unique([recipeId, itemDefId])
+}
+
+model ForgeBatch {
+  id          String       @id @default(cuid())
+  characterId String
+  recipeId    String
+  status      BatchStatus  @default(PENDING)
+  quality     Int          @default(1)
+  createdAt   DateTime     @default(now())
+  finishedAt  DateTime?
+  character   Character    @relation(fields: [characterId], references: [id])
+  recipe      ForgeRecipe  @relation(fields: [recipeId], references: [id])
+}
+
+model QuestDef {
+  id           String          @id @default(cuid())
+  code         String          @unique
+  name         String
+  description  String
+  rewardStone  Int             @default(0)
+  rewardExp    Int             @default(0)
+  createdAt    DateTime        @default(now())
+  characterMap CharacterQuest[]
+}
+
+model CharacterQuest {
+  id          String      @id @default(cuid())
+  characterId String
+  questDefId  String
+  status      QuestStatus @default(LOCKED)
+  progress    Int         @default(0)
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  character   Character   @relation(fields: [characterId], references: [id])
+  questDef    QuestDef    @relation(fields: [questDefId], references: [id])
+
+  @@unique([characterId, questDefId])
+}
+
+model AchievementDef {
+  id           String                 @id @default(cuid())
+  code         String                 @unique
+  name         String
+  description  String
+  rewardStone  Int                    @default(0)
+  createdAt    DateTime               @default(now())
+  characterMap CharacterAchievement[]
+}
+
+model CharacterAchievement {
+  id               String          @id @default(cuid())
+  characterId      String
+  achievementDefId String
+  unlockedAt       DateTime?
+  claimedAt        DateTime?
+  createdAt        DateTime        @default(now())
+  character        Character       @relation(fields: [characterId], references: [id])
+  achievementDef   AchievementDef  @relation(fields: [achievementDefId], references: [id])
+
+  @@unique([characterId, achievementDefId])
+}

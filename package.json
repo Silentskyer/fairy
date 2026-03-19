@@ -1,0 +1,16 @@
+{
+  "name": "fairy-cultivation",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:server": "npm --workspace apps/server run dev",
+    "build": "npm --workspace packages/shared run build && npm --workspace apps/server run build && npm --workspace apps/web run build",
+    "db:generate": "npm --workspace apps/server run db:generate",
+    "db:migrate": "npm --workspace apps/server run db:migrate"
+  }
+}
