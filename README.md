@@ -1,27 +1,51 @@
 # Fairy Cultivation
 
-線上文字修仙網頁遊戲的初始骨架專案，包含：
+以凡人流氣質為靈感的線上文字修仙遊戲專案，玩法涵蓋修練升級、打怪副本、商店購買、煉丹、種藥、鍛造與後續任務成長。
 
-- `apps/web`: 前端介面骨架
-- `apps/server`: 後端 API 骨架
-- `packages/shared`: 共用型別與常數
-- `prisma`: 資料庫 schema 與 seed 入口
-- `docs`: 技術選型與資料庫設計文件
+## 專案結構
 
-## 建議技術棧
+- `apps/web`: Vite + React 前端
+- `apps/server`: Fastify API
+- `packages/shared`: 共用型別與初始內容資料
+- `prisma`: Prisma schema 與 seed
+- `docs`: 世界觀、系統設計與部署文件
+- `api`: Vercel Serverless API 入口
 
-- 前端：React + Vite + TypeScript + React Router + TanStack Query
-- 後端：Fastify + TypeScript + Prisma + JWT + Zod
-- 資料庫：PostgreSQL
-- 部署：Docker Compose（開發）與雲端 VM / 容器平台（正式）
+## 技術選型
 
-## 當前狀態
+- 前端：React、Vite、TypeScript、TanStack Query
+- 後端：Fastify、TypeScript、Zod、JWT
+- 資料庫：Supabase Postgres
+- ORM：Prisma
+- 部署：GitHub + Vercel
 
-目前已完成文件規劃、資料庫 schema 草案與目錄骨架初始化。由於這台環境尚未安裝 `node` / `npm`，所以尚未執行安裝與啟動指令。
+## 目前已完成
 
-## 下一步
+- 世界觀與凡人流修仙背景
+- 玩家屬性、境界、修為成長與戰鬥規則
+- 副本、商店、煉丹、種藥、鍛造的初版設計
+- 初期怪物、地圖、材料、配方與商店資料
+- Prisma schema 初版
+- Prisma seed 初版
+- Vercel API 入口與前端首頁資料串接
+
+## 本機開發
 
 1. 安裝 Node.js 20+
-2. 安裝套件管理工具（`npm` 或 `pnpm`）
-3. 啟動 PostgreSQL 或使用容器
-4. 依照 `docs/tech-stack.md` 與 `docs/database-schema.md` 繼續開發 API 與頁面
+2. 複製 `.env.example` 成 `.env`
+3. 準備 PostgreSQL 或直接使用 Supabase 連線字串
+4. 執行 `npm install`
+5. 執行 `npm run db:generate`
+6. 執行 `npm run db:migrate`
+7. 執行 `npm run db:seed`
+8. 分別啟動 `npm run dev:server` 與 `npm run dev:web`
+
+前端本機會透過 Vite proxy 把 `/api` 轉發到 `http://localhost:3001`。
+
+## 部署方向
+
+- GitHub 作為版本管理
+- Vercel 負責網站與 API serverless function
+- Supabase 提供 Postgres
+
+詳細部署步驟見 [docs/deployment.md](docs/deployment.md)。
