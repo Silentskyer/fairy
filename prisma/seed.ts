@@ -1,1 +1,10 @@
-console.log("Seed placeholder: add initial realm levels, items, monsters, dungeons, shop data, and recipes here.");
+console.log("Seed plan ready.");
+console.log("Load these groups first:");
+console.log("- realm levels");
+console.log("- base items and materials");
+console.log("- starter monsters and dungeons");
+console.log("- shop items");
+console.log("- alchemy recipes");
+console.log("- crop definitions");
+console.log("- forge recipes");
+console.log("- test characters and inventories");
