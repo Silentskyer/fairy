@@ -26,7 +26,7 @@
 
 1. 匯入 GitHub 倉庫
 2. Framework Preset 選擇 `Vite`
-3. Root 保持在專案根目錄
+3. Root Directory 保持在專案根目錄，不要設成 `apps/server` 或 `apps/web`
 4. Build Command 使用 `npm run vercel-build`
 5. Output Directory 使用 `apps/web/dist`
 
