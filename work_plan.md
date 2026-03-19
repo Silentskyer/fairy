@@ -49,9 +49,9 @@
 - [x] 建立 `/api/alchemy/recipes`
 - [x] 建立 `/api/crops`
 - [x] 建立 `/api/forge/recipes`
-- [ ] 建立註冊登入 API
-- [ ] 建立角色建立與角色資訊 API
-- [ ] 建立修練掛機與靈石灌注 API
+- [x] 建立註冊登入 API
+- [x] 建立角色建立與角色資訊 API
+- [x] 建立修練掛機與靈石灌注 API
 - [ ] 建立副本進入、戰鬥、結算 API
 - [ ] 建立商店購買 API
 - [ ] 建立煉丹 API
