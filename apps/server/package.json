@@ -7,7 +7,6 @@
     "dev": "tsx watch src/index.ts",
     "build": "prisma generate --schema ../../prisma/schema.prisma && tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "vercel-build": "npm --prefix ../.. run vercel-build",
     "db:generate": "prisma generate --schema ../../prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema ../../prisma/schema.prisma",
     "db:seed": "tsx ../../prisma/seed.ts"

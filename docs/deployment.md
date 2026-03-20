@@ -26,8 +26,12 @@
 
 - Root Directory：專案根目錄
 - Framework Preset：Vite
+- Install Command：`npm install`
 - Build Command：`npm run vercel-build`
 - Output Directory：`apps/web/dist`
+
+不要把 Root Directory 設成 `apps/server` 或 `apps/web`。
+如果設錯，Vercel 可能會自動改用 `npm install --prefix=../..`，這在 monorepo 下容易出現安裝錯誤。
 
 ## 3. Vercel 環境變數
 

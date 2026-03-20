@@ -45,8 +45,10 @@
 ## Vercel 部署重點
 
 - Root Directory：專案根目錄
+- Install Command：`npm install`
 - Build Command：`npm run vercel-build`
 - Output Directory：`apps/web/dist`
+- Node 版本：`20.x`
 - 環境變數：
   - `DATABASE_URL`
   - `DIRECT_URL`
