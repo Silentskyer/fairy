@@ -107,6 +107,7 @@ model ItemDef {
   description        String
   createdAt          DateTime                   @default(now())
   inventorySlots     InventorySlot[]
+  equipmentInstances EquipmentInstance[]
   lootRecords        LootRecord[]
   shopItems          ShopItem[]
   alchemyIngredients AlchemyRecipeIngredient[]

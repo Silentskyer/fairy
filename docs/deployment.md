@@ -1,38 +1,37 @@
-# 部署說明
+# Deployment Guide
 
-本專案預設部署路線為：
+本專案預設部署方式：
 
-- GitHub：版本管理
-- Vercel：前端網站 + `/api` serverless function
-- Supabase：Postgres 雲端資料庫
+- GitHub：原始碼管理
+- Vercel：前端站點與 `/api` Serverless 路由
+- Supabase：Postgres 資料庫
 
 ## 1. Supabase
 
-1. 建立新專案
-2. 取得 `DATABASE_URL` 與 `DIRECT_URL`
-3. 將連線字串填入 Vercel 專案環境變數
+先在 Supabase 建立專案，取得以下環境變數：
+
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `SUPABASE_PROJECT_URL`
+- `SUPABASE_ANON_KEY`
 
 建議：
 
-- `DATABASE_URL` 使用 Supabase pooler 連線
+- `DATABASE_URL` 使用 pooler
 - `DIRECT_URL` 使用 direct connection，供 Prisma migration 使用
 
-## 2. GitHub
+## 2. Vercel
 
-1. 將本專案推到 GitHub
-2. 確認 `main` 分支為主要部署分支
+建立 Vercel 專案時請確認：
 
-## 3. Vercel
+- Root Directory：專案根目錄
+- Framework Preset：Vite
+- Build Command：`npm run vercel-build`
+- Output Directory：`apps/web/dist`
 
-1. 匯入 GitHub 倉庫
-2. Framework Preset 選擇 `Vite`
-3. Root Directory 保持在專案根目錄，不要設成 `apps/server` 或 `apps/web`
-4. Build Command 使用 `npm run vercel-build`
-5. Output Directory 使用 `apps/web/dist`
+## 3. Vercel 環境變數
 
-## 4. Vercel 環境變數
-
-至少加入：
+至少加入以下項目：
 
 - `DATABASE_URL`
 - `DIRECT_URL`
@@ -41,26 +40,31 @@
 - `SUPABASE_PROJECT_URL`
 - `SUPABASE_ANON_KEY`
 
-## 5. Prisma
+## 4. Prisma
 
-首次部署前先執行：
+第一次部署前，建議先在本地或 CI 執行：
 
 1. `npm install`
 2. `npm run db:generate`
 3. `npm run db:migrate`
 4. `npm run db:seed`
 
-如果你要把 migration 完全交給雲端流程，也可以在本地先連 Supabase 建好 schema 後再推上去。
+## 5. 路由結構
 
-## 6. 目前 Vercel 路由方式
+- `vercel.json` 負責設定前端輸出目錄與 rewrite
+- `api/[...route].ts` 會把 `/api/*` 轉給 Fastify
+- 前端以 `/api` 作為預設 API base URL
 
-- `vercel.json` 已設定前端輸出目錄
-- `api/[...route].ts` 會把 `/api/*` 轉交給 Fastify
-- 前端預設直接打 `/api`
+## 6. 目前適合部署的原因
+
+- 已有 `package-lock.json`
+- 已有 workspace-safe 的 Prisma schema 路徑
+- 已有可通過的 production build
+- 已有適合 Vercel 的 `vercel-build` 腳本
 
 ## 7. 下一步建議
 
-- 串接 Supabase Auth 或自建帳密登入
-- 建立正式角色建立 API
-- 補上商店購買、修練掛機、進副本結算等寫入型 API
-- 加入 GitHub Actions 或 Vercel Preview workflow
+- 在 Supabase 正式執行 migration 與 seed
+- 在 Vercel 設定所有環境變數
+- 建立 Preview / Production 兩組環境
+- 上線後檢查登入、角色建立、修練、副本、商店、生產 API

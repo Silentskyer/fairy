@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
-import { BatchStatus, QuestStatus, type PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import {
   alchemyRecipeSeeds,
@@ -265,7 +265,7 @@ async function ensureCharacterProgression(prisma: PrismaClient, characterId: str
     await prisma.characterQuest.upsert({
       where: { characterId_questDefId: { characterId, questDefId: quest.id } },
       update: {},
-      create: { characterId, questDefId: quest.id, status: QuestStatus.ACTIVE }
+      create: { characterId, questDefId: quest.id, status: "ACTIVE" }
     });
   }
 
@@ -286,7 +286,7 @@ async function advanceQuest(prisma: PrismaClient, characterId: string, code: key
     where: { characterId_questDefId: { characterId, questDefId: questDef.id } }
   });
 
-  if (!current || current.status === QuestStatus.CLAIMED) return;
+  if (!current || current.status === "CLAIMED") return;
 
   const progress = current.progress + delta;
   const done = progress >= questTargets[code];
@@ -295,7 +295,7 @@ async function advanceQuest(prisma: PrismaClient, characterId: string, code: key
     where: { id: current.id },
     data: {
       progress,
-      status: done ? QuestStatus.COMPLETED : QuestStatus.ACTIVE,
+      status: done ? "COMPLETED" : "ACTIVE",
       completedAt: done ? new Date() : current.completedAt
     }
   });
@@ -304,7 +304,7 @@ async function advanceQuest(prisma: PrismaClient, characterId: string, code: key
 async function syncAchievements(prisma: PrismaClient, characterId: string) {
   const character = await prisma.character.findUniqueOrThrow({ where: { id: characterId } });
   const dungeonWins = await prisma.dungeonRun.count({ where: { characterId, success: true } });
-  const alchemyWins = await prisma.alchemyBatch.count({ where: { characterId, status: BatchStatus.SUCCESS } });
+  const alchemyWins = await prisma.alchemyBatch.count({ where: { characterId, status: "SUCCESS" } });
   const defs = await prisma.achievementDef.findMany();
 
   for (const def of defs) {
@@ -762,7 +762,7 @@ export async function registerRoutes(app: FastifyInstance) {
     const quality = success && successRate > 90 ? 2 : 1;
 
     const batch = await prisma.alchemyBatch.create({
-      data: { characterId: character.id, recipeId: recipe.id, status: success ? BatchStatus.SUCCESS : BatchStatus.FAILED, quality, finishedAt: new Date() }
+      data: { characterId: character.id, recipeId: recipe.id, status: success ? "SUCCESS" : "FAILED", quality, finishedAt: new Date() }
     });
 
     if (success) {
@@ -902,7 +902,7 @@ export async function registerRoutes(app: FastifyInstance) {
     const quality = success && successRate > 85 ? 2 : 1;
 
     const batch = await prisma.forgeBatch.create({
-      data: { characterId: character.id, recipeId: recipe.id, status: success ? BatchStatus.SUCCESS : BatchStatus.FAILED, quality, finishedAt: new Date() }
+      data: { characterId: character.id, recipeId: recipe.id, status: success ? "SUCCESS" : "FAILED", quality, finishedAt: new Date() }
     });
 
     if (success) {
@@ -940,7 +940,7 @@ export async function registerRoutes(app: FastifyInstance) {
       titles: deriveTitles(
         character.level,
         achievements.filter((entry) => entry.claimedAt).length,
-        quests.filter((entry) => entry.status === QuestStatus.CLAIMED).length
+        quests.filter((entry) => entry.status === "CLAIMED").length
       )
     };
   });
@@ -967,9 +967,9 @@ export async function registerRoutes(app: FastifyInstance) {
       where: { characterId_questDefId: { characterId: character.id, questDefId: questDef.id } }
     });
 
-    if (!quest || quest.status !== QuestStatus.COMPLETED) return reply.code(400).send({ message: "Quest is not claimable" });
+    if (!quest || quest.status !== "COMPLETED") return reply.code(400).send({ message: "Quest is not claimable" });
 
-    await prisma.characterQuest.update({ where: { id: quest.id }, data: { status: QuestStatus.CLAIMED } });
+    await prisma.characterQuest.update({ where: { id: quest.id }, data: { status: "CLAIMED" } });
     await prisma.character.update({
       where: { id: character.id },
       data: { spiritStone: { increment: questDef.rewardStone }, experience: { increment: questDef.rewardExp } }
@@ -1029,7 +1029,7 @@ export async function registerRoutes(app: FastifyInstance) {
     await syncAchievements(prisma, character.id);
 
     const [quests, achievements] = await Promise.all([
-      prisma.characterQuest.count({ where: { characterId: character.id, status: QuestStatus.CLAIMED } }),
+      prisma.characterQuest.count({ where: { characterId: character.id, status: "CLAIMED" } }),
       prisma.characterAchievement.count({ where: { characterId: character.id, claimedAt: { not: null } } })
     ]);
 
