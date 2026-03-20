@@ -13,7 +13,15 @@ export async function apiRequest<T>(path: string, options?: { method?: Method; b
   });
 
   const text = await response.text();
-  const payload = text ? (JSON.parse(text) as T | { message?: string }) : null;
+  let payload: T | { message?: string } | null = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text) as T | { message?: string };
+    } catch {
+      payload = { message: text };
+    }
+  }
 
   if (!response.ok) {
     const message = payload && typeof payload === "object" && "message" in payload ? payload.message : response.statusText;
