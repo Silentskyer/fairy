@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import type { HTTPMethods } from "fastify";
 import { buildServer } from "../apps/server/src/app.js";
 
 let appPromise: ReturnType<typeof buildServer> | null = null;
@@ -36,14 +37,18 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   await app.ready();
   const payload = await readBody(req);
 
-  const injected = await app.inject({
-    method: req.method ?? "GET",
+  const injected = await (app.inject({
+    method: (req.method ?? "GET") as HTTPMethods,
     url: req.url ?? "/api",
     headers: Object.fromEntries(
       Object.entries(req.headers).map(([key, value]) => [key, Array.isArray(value) ? value.join(",") : value ?? ""])
     ),
     payload
-  });
+  }) as Promise<{
+    statusCode: number;
+    body: string;
+    headers: Record<string, string | string[] | undefined>;
+  }>);
 
   for (const [key, value] of Object.entries(injected.headers)) {
     if (value !== undefined) {
